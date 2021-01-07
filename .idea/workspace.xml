@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="31952c4c-2344-40bf-aeaf-11f3c6abfce2" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/ONL_PYT_S_01_timetracker.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/script.js" beforeDir="false" afterPath="$PROJECT_DIR$/script.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -42,6 +39,10 @@
       <workItem from="1609232531895" duration="559000" />
       <workItem from="1609588147714" duration="6980000" />
       <workItem from="1609633276394" duration="13000" />
+      <workItem from="1609849524054" duration="801000" />
+      <workItem from="1610012199625" duration="64000" />
+      <workItem from="1610012512721" duration="75000" />
+      <workItem from="1610015532608" duration="4762000" />
     </task>
     <servers />
   </component>

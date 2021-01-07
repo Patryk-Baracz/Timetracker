@@ -20,9 +20,11 @@ function apiListTasks() {
 function apiListOperationsForTask(taskId) {
     return fetch(
         apihost + `/api/tasks/${taskId}/operations`,
-        { headers: {Authorization: apikey} }
+        {headers: {Authorization: apikey}}
     ).then(
-        function (resp) { return resp.json(); }
+        function (resp) {
+            return resp.json();
+        }
     );
 }
 
@@ -109,15 +111,21 @@ function renderTask(taskId, title, description, status) {
     deleteButton.className = 'btn btn-outline-danger btn-sm ml-2';
     deleteButton.innerText = 'Delete';
     headerRightDiv.appendChild(deleteButton);
+    deleteButton.addEventListener('click', () => {
+        apiDeleteTask(taskId).then(() => {
+            console.log(section)
+            section.remove();
+        })
+    })
 
     const ulList = document.createElement('ul');
     ulList.className = 'list-group list-group-flush';
     section.appendChild(ulList);
 
     apiListOperationsForTask(taskId).then(
-        function(response) {
+        function (response) {
             response.data.forEach(
-                function(operation) {
+                function (operation) {
                     renderOperation(ulList, status, operation.id, operation.description, operation.timeSpent);
                 }
             );
@@ -153,14 +161,12 @@ function renderTask(taskId, title, description, status) {
 }
 
 
-
-
 function apiCreateTask(title, description) {
     return fetch(
         apihost + '/api/tasks',
         {
             headers: {Authorization: apikey, 'Content-Type': 'application/json'},
-            body: JSON.stringify({title: title, description: description, status: open}),
+            body: JSON.stringify({title: title, description: description, status: 'open'}),
             method: 'POST'
         }
     ).then(
@@ -172,6 +178,7 @@ function apiCreateTask(title, description) {
         }
     )
 }
+
 document.addEventListener('DOMContentLoaded', function () {
     apiListTasks().then(
         function (response) {
@@ -185,8 +192,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let formForm = document.querySelector('.js-task-adding-form');
     formForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        let title = document.querySelector('#title');
-        let description = document.querySelector('#description');
+        let title = document.querySelector('#title').value;
+        let description = document.querySelector('#description').value;
         apiCreateTask(title, description).then(
             function (response) {
                 renderTask(response.data.id, response.data.title, response.description, response.data.status);
@@ -194,3 +201,17 @@ document.addEventListener('DOMContentLoaded', function () {
         )
     })
 });
+
+function apiDeleteTask(taskId) {
+    fetch(
+        apihost + `/api/tasks/${taskId}`,
+        {
+            headers: {Authorization: apikey},
+            method: 'Delete'
+        }
+    ).then((resp) => {
+        if (!resp.ok) {
+            alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+        }
+    })
+}
