@@ -30,8 +30,8 @@ function apiListOperationsForTask(taskId) {
 
 function timeFormat(minutes) {
     if (minutes >= 60) {
-        let hours = minutes / 60;
-        let rest = minutes % hours;
+        let hours = Math.floor(minutes / 60);
+        let rest = minutes % 60;
         return `${hours}h ${rest}m`
     } else {
         return `${minutes}m`
@@ -52,22 +52,42 @@ function renderOperation(ulList, status, operationId, operationDescription, time
     time.innerText = timeFormat(timeSpent);
     descriptionDiv.appendChild(time)
 
-    if (status == 'open') {
+    if (status === 'open') {
         const btnDiv = document.createElement('div');
         li.appendChild(btnDiv);
 
         const btn15m = document.createElement('button');
         btn15m.className = 'btn btn-outline-success btn-sm mr-2';
         btn15m.innerText = '+15m';
-        btnDiv.appendChild(btn15m)
+        btnDiv.appendChild(btn15m);
+        btn15m.addEventListener('click', () =>{
+            apiUpdateOperation(operationId, operationDescription, timeSpent+15).then((resp) => {
+                time.innerText = timeFormat(resp.data.timeSpent);
+                timeSpent = resp.data.timeSpent;
+            });
+        });
         const btn1h = document.createElement('button');
         btn1h.className = 'btn btn-outline-success btn-sm mr-2';
         btn1h.innerText = '+1h';
-        btnDiv.appendChild(btn1h)
+        btnDiv.appendChild(btn1h);
+        btn1h.addEventListener('click', () =>{
+            apiUpdateOperation(operationId, operationDescription, timeSpent+60).then((resp) => {
+                time.innerText = timeFormat(resp.data.timeSpent);
+                timeSpent = resp.data.timeSpent;
+            });
+        });
+
         const btnDelete = document.createElement('button');
         btnDelete.className = 'btn btn-outline-danger btn-sm';
         btnDelete.innerText = 'Delete';
         btnDiv.appendChild(btnDelete)
+
+        btnDelete.addEventListener('click', ()=>{
+            apiDeleteOperation(operationId).then(() =>{
+                li.remove()
+            })
+        })
+
     }
 }
 
@@ -147,7 +167,7 @@ function renderTask(taskId, title, description, status) {
     input.type = 'text';
     input.placeholder = 'Operation description';
     input.className = 'form-control';
-    input.minLength = '5';
+    input.minLength = 5;
     inFormDiv.appendChild(input);
 
     const formButtonDiv = document.createElement('div');
@@ -158,6 +178,15 @@ function renderTask(taskId, title, description, status) {
     addButton.className = 'btn btn-info';
     addButton.innerText = 'Add';
     formButtonDiv.appendChild(addButton);
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        apiCreateOperationForTask(taskId, input.value).then((resp) => {
+            renderOperation(ulList, status, resp.data.id, resp.data.description, resp.data.timeSpent);
+        });
+    })
+
+
 }
 
 
@@ -179,6 +208,23 @@ function apiCreateTask(title, description) {
     )
 }
 
+function apiCreateOperationForTask(taskId, description) {
+    return fetch(
+        apihost + `/api/tasks/${taskId}/operations`,
+        {
+            headers: {Authorization: apikey, 'Content-Type': 'application/json'},
+            body: JSON.stringify({description: description, timeSpent: 0}),
+            method: 'POST'
+        }
+    ).then((resp) => {
+        if (!resp.ok) {
+            alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+        }
+        return resp.json();
+        }
+    )
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     apiListTasks().then(
         function (response) {
@@ -196,20 +242,51 @@ document.addEventListener('DOMContentLoaded', function () {
         let description = document.querySelector('#description').value;
         apiCreateTask(title, description).then(
             function (response) {
-                renderTask(response.data.id, response.data.title, response.description, response.data.status);
+                renderTask(response.data.id, response.data.title, response.data.description, response.data.status);
             }
         )
-    })
+    });
 });
 
+function apiUpdateOperation(operationId, description, timeSpent) {
+     return fetch(
+        apihost + `/api/operations/${operationId}`,
+        {
+            headers: {Authorization: apikey, 'Content-Type': 'application/json'},
+            body: JSON.stringify({description: description, timeSpent: timeSpent}),
+            method: 'PUT'
+        }
+    ).then((resp) => {
+        if (!resp.ok) {
+            alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+        }
+        return resp.json();
+        }
+    )
+}
+
 function apiDeleteTask(taskId) {
-    fetch(
+    return fetch(
         apihost + `/api/tasks/${taskId}`,
         {
             headers: {Authorization: apikey},
             method: 'Delete'
         }
     ).then((resp) => {
+        if (!resp.ok) {
+            alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+        }
+    })
+}
+
+function apiDeleteOperation(operationId) {
+    return fetch(
+        apihost + `/api/operations/${operationId}`,
+        {
+            headers: {Authorization: apikey},
+            method: 'Delete'
+        }
+    ).then((resp) =>{
         if (!resp.ok) {
             alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
         }
