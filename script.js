@@ -125,6 +125,14 @@ function renderTask(taskId, title, description, status) {
         finishButton.className = 'btn btn-dark btn-sm js-task-open-only';
         finishButton.innerText = 'Finish';
         headerRightDiv.appendChild(finishButton);
+        finishButton.addEventListener('click', () => {
+            status = 'finished'
+            apiUpdateTask(taskId, title, description, status).then(()=>{
+                section.querySelectorAll('.js-task-open-only').forEach((el) =>{
+                    el.parentElement.removeChild(el);
+                });
+            });
+        });
     }
 
     const deleteButton = document.createElement('button');
@@ -133,7 +141,6 @@ function renderTask(taskId, title, description, status) {
     headerRightDiv.appendChild(deleteButton);
     deleteButton.addEventListener('click', () => {
         apiDeleteTask(taskId).then(() => {
-            console.log(section)
             section.remove();
         })
     })
@@ -152,40 +159,41 @@ function renderTask(taskId, title, description, status) {
         }
     )
 
-    const formDiv = document.createElement('div');
-    formDiv.className = 'card-body';
-    section.appendChild(formDiv);
+    if(status == 'open') {
+        const formDiv = document.createElement('div');
+        formDiv.className = 'card-body js-task-open-only';
+        section.appendChild(formDiv);
 
-    const form = document.createElement('form');
-    formDiv.appendChild(form);
+        const form = document.createElement('form');
+        formDiv.appendChild(form);
 
-    const inFormDiv = document.createElement('div');
-    inFormDiv.className = 'input-group';
-    form.appendChild(inFormDiv);
+        const inFormDiv = document.createElement('div');
+        inFormDiv.className = 'input-group';
+        form.appendChild(inFormDiv);
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Operation description';
-    input.className = 'form-control';
-    input.minLength = 5;
-    inFormDiv.appendChild(input);
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Operation description';
+        input.className = 'form-control';
+        input.minLength = 5;
+        inFormDiv.appendChild(input);
 
-    const formButtonDiv = document.createElement('div');
-    formButtonDiv.className = 'input-group-append';
-    inFormDiv.appendChild(formButtonDiv);
+        const formButtonDiv = document.createElement('div');
+        formButtonDiv.className = 'input-group-append';
+        inFormDiv.appendChild(formButtonDiv);
 
-    const addButton = document.createElement('button');
-    addButton.className = 'btn btn-info';
-    addButton.innerText = 'Add';
-    formButtonDiv.appendChild(addButton);
+        const addButton = document.createElement('button');
+        addButton.className = 'btn btn-info';
+        addButton.innerText = 'Add';
+        formButtonDiv.appendChild(addButton);
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        apiCreateOperationForTask(taskId, input.value).then((resp) => {
-            renderOperation(ulList, status, resp.data.id, resp.data.description, resp.data.timeSpent);
-        });
-    })
-
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            apiCreateOperationForTask(taskId, input.value).then((resp) => {
+                renderOperation(ulList, status, resp.data.id, resp.data.description, resp.data.timeSpent);
+            });
+        })
+    }
 
 }
 
@@ -290,5 +298,21 @@ function apiDeleteOperation(operationId) {
         if (!resp.ok) {
             alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
         }
+    })
+}
+
+function apiUpdateTask(taskId, title, description, status) {
+    fetch(
+        apihost + `/api/tasks/${taskId}`,
+        {
+            headers: {Authorization: apikey, 'Content-Type': 'application/json'},
+            body: JSON.stringify({title: title, description: description, status: status}),
+            method: 'PUT'
+        }
+    ).then((resp) => {
+        if (!resp.ok) {
+            alert('Wystąpił błąd! Otwórz devtools i zakładkę Sieć/Network, i poszukaj przyczyny');
+        }
+        return resp.json();
     })
 }
